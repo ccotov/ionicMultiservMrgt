@@ -1,0 +1,88 @@
+<ion-view view-title="Configuración">
+
+  <ion-content>
+
+	<div ng-hide="agregandoVehiculo">
+		<div class="list list-inset" ng-if="!param" >
+		  <h2 class="title">Cliente</h2>
+		  <label class="item item-input item-stacked-label">
+		  	<span class="input-label">Nombre:</span>
+		    <input type="text" ng-model="cliente.fields.Nombre">
+		  </label>
+		  <label class="item item-input item-stacked-label">
+		  	<span class="input-label">Email:</span>
+		    <input type="email" ng-model="cliente.fields.Email">
+		  </label>
+		  <label class="item item-input item-stacked-label">
+		  	<span class="input-label">Fecha de Nacimiento:</span>
+		    <input type="date" ng-model="cliente.fields.FechaNacimiento">
+		  </label>
+		  <label class="item item-input item-stacked-label">
+		  	<span class="input-label">Teléfono:</span>
+		    <input type="tel" ng-model="cliente.fields.Telefono">
+		</div>
+		<pre>{{param}}</pre>
+		<div class = "padding" ng-if=" agregandoCliente ">
+			<button class="button button-block button-positive" ng-click="add()">
+			  Agregar Cliente
+			</button>
+		</div>
+		<div class = "padding" ng-if=" !agregandoCliente ">
+			<button class="button button-block button-positive" ng-click="editar()">
+			  Editar Cliente
+			</button>
+		</div>
+	</div>
+
+	<!-- Lista de Vehículos -->
+	<div ng-if="mostrarListaVehiculos">
+		<h2 class="title">Vehículos</h2>
+		<div class="row header">
+		  <div class="col">Marca</div>
+		  <div class="col">Modelo</div>
+		  <div class="col">Año</div>
+		  <div class="col">Placa</div>
+		</div>
+		<div class="row" ng-repeat="vehiculo in vehiculos">
+		  <div class="col">{{vehiculo.fields.Marca}}</div>
+		  <div class="col">{{vehiculo.fields.Modelo}}</div>
+		  <div class="col">{{vehiculo.fields.Anno}}</div>
+		  <div class="col">{{vehiculo.fields.Placa}}</div>
+		</div>
+		<div class = "padding">
+			<button class="button button-block button-positive" ng-click="iniciarAgregarVehiculo()">
+			  Agregar Vehículos
+			</button>
+		</div>
+	</div>
+	
+	<!-- Agregar Vehículo -->
+	<div class="list list-inset" ng-show="agregandoVehiculo">
+		<h2 class="title">Agregar Vehículo</h2>
+	  	<label class="item item-input item-stacked-label">
+	  		<span class="input-label">Marca:</span>
+	    	<input type="text" ng-model="nuevoVehiculo.Marca">
+	  	</label>
+	  	<label class="item item-input item-stacked-label">
+	  		<span class="input-label">Modelo:</span>
+	    	<input type="text" ng-model="nuevoVehiculo.Modelo">
+	  	</label>
+	  	<label class="item item-input item-stacked-label">
+	  		<span class="input-label">Año:</span>
+	    	<input type="number" ng-model="nuevoVehiculo.Anno">
+	  	</label>
+	  	<label class="item item-input item-stacked-label">
+	  		<span class="input-label">Placa:</span>
+	    	<input type="text" ng-model="nuevoVehiculo.Placa">
+	  	</label>
+	  	<div class = "padding">
+			<button class="button button-block button-positive" ng-click="addVehiculo()">
+			  Guardar Vehículo
+			</button>
+		</div>
+	</div>
+
+
+  </ion-content>
+
+</ion-view>
