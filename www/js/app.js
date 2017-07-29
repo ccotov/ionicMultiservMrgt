@@ -64,7 +64,8 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
         templateUrl: 'templates/tab-cita.html',
         controller: 'CitaCtrl'
       }
-    }
+    },
+    params: {'cita':''}
   })
 
   .state('tab.inicio', {

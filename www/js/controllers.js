@@ -1,24 +1,7 @@
 angular.module('starter.controllers', [])
 
-/*import { AlertController } from 'ionic-angular';
-
-export class MyPage {
-  constructor(public alertCtrl: AlertController) {
-  }
-
-  showAlert() {
-    let alert = this.alertCtrl.create({
-      title: 'New Friend!',
-      subTitle: 'Your friend, Obi wan Kenobi, just accepted your friend request!',
-      buttons: ['OK']
-    });
-    alert.present();
-  }
-}*/
-
 .controller('CitaCtrl', function($scope, $state, $stateParams, ClientesService, VehiculosService, ServiciosService, CitasService, ClienteID) {
   
-    console.log("lkjjklj");
   $scope.isContenidoCargado = false;
   
   $scope.cliente = {};
@@ -26,25 +9,58 @@ export class MyPage {
   $scope.servicios = {};
   $scope.listaVehiculos = [];
   $scope.citaNueva = {};
+  $scope.cita = {};
   $scope.horaNueva = 0;
   $scope.serviceSelected = "";
-  var param;
-  var citaParam = $stateParams.citaID;
-  
-  
-  $scope.init = function() {
-    ServiciosService.getAll().then( function(value) {
-      $scope.servicios = value;
-    });
-    console.log(citaParam);
-  }
+  $scope.editandoCita = false;
+  var clienteIDstored;
 
   setTimeout(function() {
-    param = ClienteID.get();
+    clienteIDstored = ClienteID.get();
     $scope.cargarCliente();
     $scope.$apply();
+    $scope.cargarServicios();
+    if ( $stateParams.cita ) {
+      $scope.cargarCita();
+      //$scope.servicioSelected($scope.editCitaServicio);
+      console.log($scope.citaEditar);
+    }
   }, 1500);
   
+  $scope.cargarServicios = function() {
+    ServiciosService.getAll().then( function(value) {
+      $scope.servicios = value;
+      if ( $scope.citaEditar ) {
+        value.forEach(function(item, index){
+          if ( item.fields.Nombre == $scope.citaEditar.Tipo[0] ) {
+            $scope.editCitaServicio = item;
+            $scope.servicioSelected(item);
+          }
+        })
+      } 
+    });
+  }
+
+  $scope.cargarCita = function() {
+    $scope.citaEditar = $stateParams.cita;
+    $scope.cargarObjetoCita();
+    $scope.editandoCita = true;
+    $scope.cargarServicios();
+    $scope.editCitaComentarios = $scope.citaEditar.Comentarios;
+    var fechaFormat = new Date($scope.citaEditar.Fecha);
+    $scope.citaEditar.Fecha = new Date($scope.citaEditar.Fecha);
+    $scope.cambioFecha($scope.citaEditar.Fecha);
+    $scope.HoraActual = fechaFormat.getHours() +':'+ ('0'+fechaFormat.getMinutes()).slice(-2);
+    $scope.horaNueva = $scope.getObjetoHora($scope.HoraActual);
+    $scope.isContenidoCargado = true;
+  }
+
+  $scope.cargarObjetoCita = function() {
+    CitasService.getById($scope.citaEditar.id).then(function(value) {
+      $scope.cita = value;
+    })
+  }
+
   $scope.cargarVehiculos = function() {
     VehiculosService.getAll($scope.cliente.fields.Cliente).then(function(value){
       $scope.listaVehiculos = value;
@@ -54,7 +70,7 @@ export class MyPage {
   }
 
   $scope.cargarCliente = function() {
-    ClientesService.getById(param).then(function(value){
+    ClientesService.getById(clienteIDstored).then(function(value){
       $scope.cliente = value;
       $scope.citaNueva.Cliente = value;
       $scope.cargarVehiculos();
@@ -116,23 +132,40 @@ export class MyPage {
       }
   }
 
+  $scope.getObjetoHora = function(hora) {
+      for (var i=0; i < $scope.horas.length; i++) {
+          if ( $scope.horas[i].hora === hora ) {
+              return $scope.horas[i];
+          }
+      }
+  }
+
   $scope.cambioFecha = function(pfecha) {
       $scope.crearHoras();
       $scope.cargarHoras(pfecha);
   }
 
-  $scope.agregarCita = function() {
+  $scope.guardarCita = function() {
     var horas = $scope.horaNueva.hora.split(':')[0];
     var minutos = $scope.horaNueva.hora.split(':')[1];
-    /*if (param) {
-        $scope.cita.fields.Fecha.setHours(horas,minutos,0,0);
+    $scope.citaEditar.Fecha.setHours(horas,minutos,0,0);
+    if ( $scope.citaEditar ) {
         delete $scope.cita.fields.NombreCliente;
         delete $scope.cita.fields.DetalleVehiculo;
         delete $scope.cita.fields.Tipo;
-        $scope.cita.fields.TipoServicio = [$scope.cita.fields.TipoServicio];
-        $scope.cita.save();
-        console.log('Cita guardada!');
-    } else { */
+        $scope.cita.fields.TipoServicio[0] = $scope.citaEditar.TipoServicio[0];
+        $scope.cita.fields.Comentarios = $scope.citaEditar.Comentarios;
+        $scope.cita.fields.Fecha = $scope.citaEditar.Fecha;
+        console.log($scope.cita);
+        $scope.cita.save().then(function(value){
+          if (value) {
+            alert('Cita guardada!');  
+          } else {
+            console.log(value);
+          }
+        })
+        
+    } else { 
         $scope.citaNueva.Fecha.setHours(horas,minutos,0,0);
         $scope.citaNueva.TipoServicio = $scope.serviceSelected;
         CitasService.add($scope.citaNueva).then(function(value){
@@ -141,8 +174,8 @@ export class MyPage {
           }
           console.log(value);
         });
-    //}
-    $state.go( '/tab-inicio' );
+    }
+    $state.go( 'tab.inicio' );
   }
 
   $scope.horaSelected = function(hora) {
@@ -153,20 +186,18 @@ export class MyPage {
     $scope.serviceSelected = service;
   }
 
-  $scope.init();
-
 }) // fin de CitaCtrl
 
 
 .controller('InicioCtrl', function($scope, $state, $location, $window, ClientesService, CitasService, ClienteID) {
-  console.log('entro');
+  
   $scope.cliente = {};
   $scope.citas = [];
-  var param;
+  var clienteIDstored;
 
   $scope.init = function() {
     if ( ClienteID.isSet() ) {
-      param = ClienteID.get();
+      clienteIDstored = ClienteID.get();
       $scope.cargarCliente();
     } else {
       console.log('No hay cliente ID');
@@ -174,7 +205,6 @@ export class MyPage {
   }
 
   $scope.cargarCitas = function() {
-    console.log($scope.cliente.fields.Cliente);
     CitasService.getAll($scope.cliente.fields.Cliente).then(function(value){
       value.forEach(function(item, index){
               item.fields.id = item.id;
@@ -185,17 +215,15 @@ export class MyPage {
   }
 
   $scope.cargarCliente = function() {
-    ClientesService.getById(param).then(function(value){
+    ClientesService.getById(clienteIDstored).then(function(value){
       $scope.cliente = value;
       $scope.$apply();
       $scope.cargarCitas();
     });
   }
 
-  $scope.editarCita = function(citaID) {
-    //$state.go('tab.cita-editar');
-    $state.transitionTo('tab.cita-editar', null, {reload: true, notify:true});
-
+  $scope.editarCita = function(cita) {
+    $state.go('tab.cita-editar', { 'cita':cita });
   }
 
   $scope.init();
@@ -206,19 +234,19 @@ export class MyPage {
   $scope.chatdetail = chatdetail.get($stateParams.chatId);
 })
 
-.controller('ConfiguracionCtrl', function($scope, ClientesService, VehiculosService, ClienteID) {
+.controller('ConfiguracionCtrl', function($scope, $state, ClientesService, VehiculosService, ClienteID) {
   $scope.cliente = {};
   $scope.vehiculos = [];
   $scope.nuevoVehiculo = {};
   $scope.mostrarListaVehiculos = false;
   $scope.agregandoVehiculo = false;
   $scope.agregandoCliente = true;
-  var param;
- 
+  var clienteIDstored;
+
   $scope.init = function() {
     if ( ClienteID.isSet() ) {
       $scope.agregandoCliente = false;
-      param = ClienteID.get();
+      clienteIDstored = ClienteID.get();
       $scope.cargarCliente();
     } else {
       console.log('no hay cliente ID');
@@ -238,7 +266,7 @@ export class MyPage {
   }
 
   $scope.cargarCliente = function() {
-    ClientesService.getById(param).then(function(value){
+    ClientesService.getById(clienteIDstored).then(function(value){
       value.fields.FechaNacimiento = new Date(value.fields.FechaNacimiento);
       $scope.cliente = value;
       $scope.$apply();

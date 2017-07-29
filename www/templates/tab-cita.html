@@ -1,45 +1,81 @@
 <ion-view view-title="Agendar Cita">
   <ion-content class="padding" ng-show="isContenidoCargado">
-    <div class="item">Cliente: {{cliente.fields.Nombre}}</div>
-    <form ng-submit="agregarCita()">
     <div>
+    <label class="item item-input">
+      <div class="input-label">Cliente</div>
+      <p>{{cliente.fields.Nombre}}</p>
+    </label>
+    </div>
+    <form ng-submit="guardarCita()">
+    
+    <div ng-if = "!editandoCita">
       <label class="item item-input item-select">
         <div class="input-label">Vehículo</div>
         <select ng-options="vehiculo as vehiculo.fields.Vehiculo for vehiculo in listaVehiculos" 
                   ng-model="citaNueva.Vehiculo"></select>
       </label>
     </div>
-    <div>
+    <div ng-if = "editandoCita">
+      <label class="item item-input">
+        <div class="input-label">Vehículo</div>
+        <p>{{citaEditar.DetalleVehiculo[0]}}</p>
+    </div>
+
+    <div ng-if = "!editandoCita">
       <label class="item item-input item-select">
         <div class="input-label">Tipo de Servicio</div>
-        <select ng-options="servicio.fields.Nombre for servicio in servicios" ng-model="serviceSelected" ng-change="servicioSelected(serviceSelected)">
-            {{servicio.fields.Nombre}}</select>
+        <select ng-options="servicio.fields.Nombre for servicio in servicios" ng-model="serviceSelected" ng-change="servicioSelected(serviceSelected)">{{servicio.fields.Nombre}}</select>
       </label>
     </div>
-    <div>
-      <label class="item item-input">
-        <textarea placeholder="Comentarios" ng-model="citaNueva.Comentarios"></textarea>
+    <div ng-if = "editandoCita">
+      <label class="item item-input item-select">
+        <div class="input-label">Tipo de Servicio</div>
+        <select ng-options="servicio.fields.Nombre for servicio in servicios" ng-model="editCitaServicio" ng-change="servicioSelected(serviceSelected)">{{editCitaServicio}}</select>
       </label>
     </div>
-    <div>
+
+    <div ng-if = "!editandoCita"> 
+      <label class="item item-input item-stacked-label">
+        <span class="input-label">Comentarios</span>
+        <textarea ng-model="citaNueva.Comentarios"></textarea>
+      </label>
+    </div>
+    <div ng-if = "editandoCita">
+       <label class="item item-input item-stacked-label">
+         <span class="input-label">Comentarios</span>
+         <textarea ng-model="citaEditar.Comentarios">{{citaEditar.Comentarios}}</textarea>
+       </label>
+    </div>
+
+    <div ng-if = "!editandoCita">
       <label class="item item-input-inset">
         <div class="input-label">Fecha</div>
         <input type="date" required type="date" ng-model="citaNueva.Fecha" ng-change="cambioFecha(citaNueva.Fecha)">
       </label>
     </div>
-    <div>
+    <div ng-if = "editandoCita">
+      <label class="item item-input-inset">
+        <div class="input-label">Fecha</div>
+        <input type="date" required type="date" ng-model="citaEditar.Fecha" ng-change="cambioFecha(citaEditar.Fecha)">
+      </label>
+    </div>
+
+    <div ng-if = "!editandoCita">
       <label class="item item-input item-select">
         <div class="input-label">Hora</div>
         <select ng-model="horaNueva" ng-options="hora.hora for hora in horas" ng-change="horaSelected(horaNueva)">
         </select>
-        <!-- <select ng-model="horaNueva">
-          <option ng-repeat="hora in horas" ng-selected="HoraActual===hora.hora" ng-show="hora.disponible" value="{{hora.hora}}" ng-change="setSelected(horaNueva)">{{hora.hora}}</option>
-        </select> -->
       </label>
     </div>
-      <button class="button button-block button-positive" type="submit">
-        Guardar
-      </button>
+    <div ng-if = "editandoCita">
+      <label class="item item-input item-select">
+        <div class="input-label">Hora</div>
+        <select ng-model="horaNueva" ng-options="hora.hora for hora in horas" ng-change="horaSelected(horaNueva)">
+        </select>
+      </label>
+    </div>
+
+      <button class="button button-block button-positive" type="submit">Guardar</button>
     </form>
   </ion-content>
 </ion-view>
