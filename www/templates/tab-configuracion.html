@@ -1,37 +1,41 @@
 <ion-view view-title="Configuración">
 
   <ion-content>
-
+	
 	<div ng-hide="agregandoVehiculo">
-		<div class="list list-inset" ng-if="!param" >
-		  <h2 class="title">Cliente</h2>
-		  <label class="item item-input item-stacked-label">
-		  	<span class="input-label">Nombre:</span>
-		    <input type="text" ng-model="cliente.fields.Nombre">
-		  </label>
-		  <label class="item item-input item-stacked-label">
-		  	<span class="input-label">Email:</span>
-		    <input type="email" ng-model="cliente.fields.Email">
-		  </label>
-		  <label class="item item-input item-stacked-label">
-		  	<span class="input-label">Fecha de Nacimiento:</span>
-		    <input type="date" ng-model="cliente.fields.FechaNacimiento">
-		  </label>
-		  <label class="item item-input item-stacked-label">
-		  	<span class="input-label">Teléfono:</span>
-		    <input type="tel" ng-model="cliente.fields.Telefono">
-		</div>
-		<pre>{{param}}</pre>
-		<div class = "padding" ng-if=" agregandoCliente ">
-			<button class="button button-block button-positive" ng-click="add()">
-			  Agregar Cliente
-			</button>
-		</div>
-		<div class = "padding" ng-if=" !agregandoCliente ">
-			<button class="button button-block button-positive" ng-click="editar()">
-			  Editar Cliente
-			</button>
-		</div>
+		<form name="clienteForm">
+			<div class="list list-inset" ng-if="!param" >
+			  <h2 class="title">Cliente</h2>
+			  <label class="item item-input item-stacked-label">
+			  	<span class="input-label">Nombre completo</span>
+			    <input type="text" name="nombre" ng-model="cliente.fields.Nombre" ng-pattern="nameRegex" required>
+			    <span STYLE="color: red; font-size: 10pt" ng-show="clienteForm.nombre.$error.pattern">* Nombre inválido. Ej: Oscar Rojas *</span>
+			  </label>
+			  <label class="item item-input item-stacked-label">
+			  	<span class="input-label">Email</span>
+			    <input type="email" name="email" ng-model="cliente.fields.Email" required>
+			    <span STYLE="color: red; font-size: 10pt" ng-show="clienteForm.email.$invalid">* Email inválido. Ej: oscar@yahoo.com *</span>
+			  </label>
+			  <label class="item item-input item-stacked-label">
+			  	<span class="input-label">Fecha de Nacimiento</span>
+			    <input type="date" ng-model="cliente.fields.FechaNacimiento" required>
+			  </label>
+			  <label class="item item-input item-stacked-label">
+			  	<span class="input-label">Teléfono</span>
+			    <input type="tel" name="telefono" ng-model="cliente.fields.Telefono" ng-pattern="telRegex" required>
+			    <span STYLE="color: red; font-size: 10pt" ng-show="clienteForm.telefono.$error.pattern">* Teléfono inválido. Ej: 81234567 *</span>
+			</div>
+			<div class = "padding" ng-if=" agregandoCliente ">
+				<button class="button button-block button-positive" ng-disabled="clienteForm.$invalid" ng-click="add()">
+				  Agregar Cliente
+				</button>
+			</div>
+			<div class = "padding" ng-if=" !agregandoCliente ">
+				<button class="button button-block button-positive" ng-disabled="clienteForm.$invalid" ng-click="editar()">
+				  Guardar Cliente
+				</button>
+			</div>
+		</form>
 	</div>
 
 	<!-- Lista de Vehículos -->
@@ -49,40 +53,44 @@
 		  <div class="col">{{vehiculo.fields.Anno}}</div>
 		  <div class="col">{{vehiculo.fields.Placa}}</div>
 		</div>
-		<div class = "padding">
-			<button class="button button-block button-positive" ng-click="iniciarAgregarVehiculo()">
-			  Agregar Vehículos
-			</button>
-		</div>
+	</div>
+	<div class = "padding" ng-if="mostrarListaVehiculos">
+		<button class="button button-block button-positive" ng-click="iniciarAgregarVehiculo()">
+		  Agregar Vehículos
+		</button>
 	</div>
 	
 	<!-- Agregar Vehículo -->
 	<div class="list list-inset" ng-show="agregandoVehiculo">
-		<h2 class="title">Agregar Vehículo</h2>
-	  	<label class="item item-input item-stacked-label">
-	  		<span class="input-label">Marca:</span>
-	    	<input type="text" ng-model="nuevoVehiculo.Marca">
-	  	</label>
-	  	<label class="item item-input item-stacked-label">
-	  		<span class="input-label">Modelo:</span>
-	    	<input type="text" ng-model="nuevoVehiculo.Modelo">
-	  	</label>
-	  	<label class="item item-input item-stacked-label">
-	  		<span class="input-label">Año:</span>
-	    	<input type="number" ng-model="nuevoVehiculo.Anno">
-	  	</label>
-	  	<label class="item item-input item-stacked-label">
-	  		<span class="input-label">Placa:</span>
-	    	<input type="text" ng-model="nuevoVehiculo.Placa">
-	  	</label>
-	  	<div class = "padding">
-			<button class="button button-block button-positive" ng-click="addVehiculo()">
-			  Guardar Vehículo
-			</button>
-		</div>
+		<form name="vehiculoForm">
+			<h2 class="title">Agregar Vehículo</h2>
+		  	<label class="item item-input item-stacked-label">
+		  		<span class="input-label">Marca:</span>
+		    	<input type="text" name="marca" ng-minlength="2" ng-model="nuevoVehiculo.Marca" required>
+		    	<span STYLE="color: red; font-size: 10pt" ng-show="vehiculoForm.marca.$error.$invalid">* Marca inválida. Mínimo 2 caracteres *</span>
+		  	</label>
+		  	<label class="item item-input item-stacked-label">
+		  		<span class="input-label">Modelo:</span>
+		    	<input type="text" name="modelo" ng-minlength="1" ng-model="nuevoVehiculo.Modelo" required>
+		    	<span STYLE="color: red; font-size: 10pt" ng-show="vehiculoForm.modelo.$error.$invalid">* Modelo inválido. Mínimo 2 caracteres *</span>
+		  	</label>
+		  	<label class="item item-input item-stacked-label">
+		  		<span class="input-label">Año:</span>
+		    	<input type="number" name="anho" ng-minlength="4" ng-model="nuevoVehiculo.Anno" required>
+		    	<span STYLE="color: red; font-size: 10pt" ng-show="vehiculoForm.anho.$error.$invalid">* Año inválido. Ej: 2012 *</span>
+		  	</label>
+		  	<label class="item item-input item-stacked-label">
+		  		<span class="input-label">Placa:</span>
+		    	<input type="text" name="placa" ng-minlength="1" ng-model="nuevoVehiculo.Placa" required>
+		    	<span STYLE="color: red; font-size: 10pt" ng-show="vehiculoForm.placa.$error.$invalid">* Placa inválida. Mínimo 1 caracter *</span>
+		  	</label>
+	  	</form>
 	</div>
-
-
+  	<div class = "padding" ng-show="agregandoVehiculo">
+		<button class="button button-block button-positive" ng-disabled="vehiculoForm.$invalid" ng-click="addVehiculo()">
+		  Guardar Vehículo
+		</button>
+	</div>
   </ion-content>
 
 </ion-view>

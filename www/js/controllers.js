@@ -16,14 +16,18 @@ angular.module('starter.controllers', [])
   var clienteIDstored;
 
   setTimeout(function() {
-    clienteIDstored = ClienteID.get();
-    $scope.cargarCliente();
-    $scope.$apply();
-    $scope.cargarServicios();
-    if ( $stateParams.cita ) {
-      $scope.cargarCita();
-      //$scope.servicioSelected($scope.editCitaServicio);
-      console.log($scope.citaEditar);
+    if ( ClienteID.isSet() ) {
+      clienteIDstored = ClienteID.get();
+      $scope.cargarCliente();
+      $scope.$apply();
+      $scope.cargarServicios();
+      if ( $stateParams.cita ) {
+        $scope.cargarCita();
+        console.log($scope.citaEditar);
+      } 
+    } else {
+      alert('Se deben ingresar datos de cliente!');
+      $state.go('tab.configuracion');
     }
   }, 1500);
   
@@ -47,7 +51,8 @@ angular.module('starter.controllers', [])
     $scope.editandoCita = true;
     $scope.cargarServicios();
     $scope.editCitaComentarios = $scope.citaEditar.Comentarios;
-    var fechaFormat = new Date($scope.citaEditar.Fecha);
+    var fechaFormat = new Date();
+    fechaFormat = new Date($scope.citaEditar.Fecha);
     $scope.citaEditar.Fecha = new Date($scope.citaEditar.Fecha);
     $scope.cambioFecha($scope.citaEditar.Fecha);
     $scope.HoraActual = fechaFormat.getHours() +':'+ ('0'+fechaFormat.getMinutes()).slice(-2);
@@ -63,6 +68,10 @@ angular.module('starter.controllers', [])
 
   $scope.cargarVehiculos = function() {
     VehiculosService.getAll($scope.cliente.fields.Cliente).then(function(value){
+      if ( value.length == 0 ) {
+        alert('Aún no se han ingresado vehículos!\n\nIngrese su vehículo a continuación...');
+        $state.go('tab.configuracion');
+      }
       $scope.listaVehiculos = value;
       $scope.isContenidoCargado = true;
       $scope.$apply();
@@ -100,7 +109,7 @@ angular.module('starter.controllers', [])
           value.forEach(function(item, index){
               var fechaCompl = new Date(item.fields.Fecha);
               var hora = fechaCompl.getHours() +':'+ ('0'+fechaCompl.getMinutes()).slice(-2);
-              var timeReq = $scope.getTiempoServicio(item.fields.Tipo[0]);
+              var timeReq = $scope.getTiempoServicio(item.fields.Tipo[0]); 
               $scope.setNoDisponible( hora, timeReq );
           });
           $scope.$apply();
@@ -146,34 +155,43 @@ angular.module('starter.controllers', [])
   }
 
   $scope.guardarCita = function() {
+    var fechaHoy = new Date();
+    fechaHoy.setHours(0,0,0,0);
     var horas = $scope.horaNueva.hora.split(':')[0];
     var minutos = $scope.horaNueva.hora.split(':')[1];
-    $scope.citaEditar.Fecha.setHours(horas,minutos,0,0);
     if ( $scope.citaEditar ) {
-        delete $scope.cita.fields.NombreCliente;
-        delete $scope.cita.fields.DetalleVehiculo;
-        delete $scope.cita.fields.Tipo;
-        $scope.cita.fields.TipoServicio[0] = $scope.citaEditar.TipoServicio[0];
-        $scope.cita.fields.Comentarios = $scope.citaEditar.Comentarios;
-        $scope.cita.fields.Fecha = $scope.citaEditar.Fecha;
-        console.log($scope.cita);
-        $scope.cita.save().then(function(value){
-          if (value) {
-            alert('Cita guardada!');  
-          } else {
-            console.log(value);
-          }
-        })
-        
-    } else { 
-        $scope.citaNueva.Fecha.setHours(horas,minutos,0,0);
-        $scope.citaNueva.TipoServicio = $scope.serviceSelected;
-        CitasService.add($scope.citaNueva).then(function(value){
-          if (value.id) {
-              console.log("Cita agregada con éxito");
-          }
+      if ( $scope.citaEditar.Fecha < fechaHoy ) {
+        alert('No es posible solicitar una cita para una fecha anterior a la actual');
+        return; 
+      }
+      delete $scope.cita.fields.NombreCliente;
+      delete $scope.cita.fields.DetalleVehiculo;
+      delete $scope.cita.fields.Tipo;
+      $scope.citaEditar.Fecha.setHours(horas,minutos,0,0);
+      $scope.cita.fields.TipoServicio[0] = $scope.citaEditar.TipoServicio[0];
+      $scope.cita.fields.Comentarios = $scope.citaEditar.Comentarios;
+      $scope.cita.fields.Fecha = $scope.citaEditar.Fecha;
+      console.log($scope.cita);
+      $scope.cita.save().then(function(value){
+        if (value) {
+          alert('Cita guardada!');  
+        } else {
           console.log(value);
-        });
+        }
+      })
+    } else {
+      if ( $scope.citaNueva.Fecha < fechaHoy ) {
+        alert('No es posible crear una cita para una fecha anterior a la actual');
+        return; 
+      }
+      $scope.citaNueva.Fecha.setHours(horas,minutos,0,0);
+      $scope.citaNueva.TipoServicio = $scope.serviceSelected;
+      CitasService.add($scope.citaNueva).then(function(value){
+        if (value.id) {
+            alert("Nueva cita guardada con éxito!");
+        }
+        console.log(value);
+      });
     }
     $state.go( 'tab.inicio' );
   }
@@ -200,14 +218,19 @@ angular.module('starter.controllers', [])
       clienteIDstored = ClienteID.get();
       $scope.cargarCliente();
     } else {
-      console.log('No hay cliente ID');
+      alert('Se deben ingresar datos de cliente!');
+      $state.go('tab.configuracion');
     }
   }
 
   $scope.cargarCitas = function() {
     CitasService.getAll($scope.cliente.fields.Cliente).then(function(value){
+      if ( value.length == 0 ) {
+        alert('Aún no se han agendado citas!\n\nIngrese su cita a continuación...');
+        $state.go('tab.cita-crear');
+      }
       value.forEach(function(item, index){
-              item.fields.id = item.id;
+        item.fields.id = item.id;
         $scope.citas.push(item.fields);
       });
       $scope.$apply();
@@ -230,9 +253,6 @@ angular.module('starter.controllers', [])
 
 }) // fin de InicioCtrl
 
-.controller('ChatDetailCtrl', function($scope, $stateParams, ChatDetail) {
-  $scope.chatdetail = chatdetail.get($stateParams.chatId);
-})
 
 .controller('ConfiguracionCtrl', function($scope, $state, ClientesService, VehiculosService, ClienteID) {
   $scope.cliente = {};
@@ -242,14 +262,14 @@ angular.module('starter.controllers', [])
   $scope.agregandoVehiculo = false;
   $scope.agregandoCliente = true;
   var clienteIDstored;
+  $scope.nameRegex = '[A-ZÑÁÉÍÓÚ][a-zA-ZñÑáéíóúÁÉÍÓÚ\\s\'.-]{2,}';
+  $scope.telRegex = '\\+*[\\d-\\s]{8,}';
 
   $scope.init = function() {
     if ( ClienteID.isSet() ) {
       $scope.agregandoCliente = false;
       clienteIDstored = ClienteID.get();
       $scope.cargarCliente();
-    } else {
-      console.log('no hay cliente ID');
     }
   }
 
@@ -302,11 +322,14 @@ angular.module('starter.controllers', [])
   }
 
   $scope.editar = function() {
-    //$scope.cliente.fields.Fecha.setHours(horas,minutos,0,0);
     delete $scope.cliente.fields.Cliente;
-    $scope.cliente.save();
-    //$scope.$apply();
-    //console.log($scope.cliente);
+    $scope.cliente.save().then(function(value){
+      if (value) {
+        alert('Cliente actualizado!');
+      } else {
+        console.log(value);
+      }
+    })
   }
 
   $scope.iniciarAgregarVehiculo = function() {

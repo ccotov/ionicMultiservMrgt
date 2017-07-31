@@ -6,15 +6,10 @@
             <div class="col">Servicio</div>
             <div class="col">Vehículo</div>
           </div>
-          <div class="row" ng-repeat="cita in citas" ng-click="editarCita(cita)">
+          <div class="row" ng-repeat="cita in citas" ng-click="editarCita(cita)" href="#/newpage">
             <div class="col">{{cita.Fecha | date : 'dd/MM/yyyy - h:mma'}}</div>
             <div class="col">{{cita.Tipo[0]}}</div>
             <div class="col">{{cita.DetalleVehiculo[0]}}</div>
-          </div>
-          <div class = "padding">
-            <button class="button button-block button-positive" ng-click="iniciarAgregarCita()">
-              Agregar Cita
-            </button>
           </div>
     </ion-list>
   </ion-content>
