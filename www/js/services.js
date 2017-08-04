@@ -100,13 +100,18 @@ angular.module('starter.services', [])
 
 .service('CitasService', ['AirtableService', function(AirtableService) {
     
-    this.getAll = function(cliente) {
+    this.getTodayByCliente = function(cliente) {
     
         var base = AirtableService.getBase();
-        
+        var today = new Date().getTimezoneOffset() * 60000; //offset in milliseconds
+        var date = (new Date(Date.now() - today)).toISOString().split('T')[0];
+        var query = 'AND( '
+            +'IS_AFTER(Fecha, "'+date+'T00:00:00.000Z"), '
+            +'({Cliente} = "'+cliente+'")'
+          +')';
         return base('Citas').select({
           view: 'Grid view',
-          filterByFormula: '({Cliente} = "'+cliente+'")'
+          filterByFormula: query
         }).all();
     };
 
@@ -118,7 +123,7 @@ angular.module('starter.services', [])
 
         return base('Citas').select({
             view: 'Grid view',
-            filterByFormula: '({Fecha} > "'+date+'T00:00:00.000Z" & {Fecha} < "'+date+'T23:59:00.000Z" )'
+            filterByFormula: 'AND( IS_AFTER(Fecha, "'+date+'T00:00:00.000Z"), IS_BEFORE(Fecha, "'+date+'T23:59:00.000Z" ))'
         }).all();
     }
 
@@ -137,7 +142,6 @@ angular.module('starter.services', [])
     };
 
     this.add = function(cita) {
-        console.log(cita);
 
         var base = AirtableService.getBase();
 
@@ -161,7 +165,6 @@ angular.module('starter.services', [])
             }));
         
         } else {
-                console.log("airtable");
             var base = AirtableService.getBase();
             var prom = base('Servicios').select({
             }).all();

@@ -1,6 +1,6 @@
 {
   "name": "multiservMgrt",
-  "app_id": "",
+  "app_id": "96c4a674",
   "type": "ionic1",
   "watchPatterns": [
     "scss/**/*"

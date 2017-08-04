@@ -10,7 +10,7 @@ angular.module('starter.controllers', [])
   $scope.listaVehiculos = [];
   $scope.citaNueva = {};
   $scope.cita = {};
-  $scope.horaNueva = 0;
+  $scope.horaNueva;
   $scope.serviceSelected = "";
   $scope.editandoCita = false;
   var clienteIDstored;
@@ -23,7 +23,6 @@ angular.module('starter.controllers', [])
       $scope.cargarServicios();
       if ( $stateParams.cita ) {
         $scope.cargarCita();
-        console.log($scope.citaEditar);
       } 
     } else {
       alert('Se deben ingresar datos de cliente!');
@@ -56,7 +55,10 @@ angular.module('starter.controllers', [])
     $scope.citaEditar.Fecha = new Date($scope.citaEditar.Fecha);
     $scope.cambioFecha($scope.citaEditar.Fecha);
     $scope.HoraActual = fechaFormat.getHours() +':'+ ('0'+fechaFormat.getMinutes()).slice(-2);
+    $scope.setDisponible( $scope.HoraActual, "1", true);
+    $scope.$apply();
     $scope.horaNueva = $scope.getObjetoHora($scope.HoraActual);
+    $scope.$apply();
     $scope.isContenidoCargado = true;
   }
 
@@ -110,7 +112,7 @@ angular.module('starter.controllers', [])
               var fechaCompl = new Date(item.fields.Fecha);
               var hora = fechaCompl.getHours() +':'+ ('0'+fechaCompl.getMinutes()).slice(-2);
               var timeReq = $scope.getTiempoServicio(item.fields.Tipo[0]); 
-              $scope.setNoDisponible( hora, timeReq );
+              $scope.setDisponible( hora, timeReq, false );
           });
           $scope.$apply();
       });
@@ -129,16 +131,20 @@ angular.module('starter.controllers', [])
       return tiempoRequerido;
   }
 
-  $scope.setNoDisponible = function(hora, timeReq) {
+  $scope.setDisponible = function(hora, timeReq, esta_disponible) {
       for (var i=0; i < $scope.horas.length; i++) {
-          if ( $scope.horas[i].hora === hora ) {
-              $scope.horas[i].disponible = false;
+          if ( $scope.horas[i].hora === hora && $scope.HoraActual != hora) {
+              $scope.horas[i].disponible = esta_disponible;
               if ( timeReq > 1) {
-                  $scope.horas[i+1].disponible = false;
-                  $scope.horas[i+2].disponible = false;
+                  $scope.horas[i+1].disponible = esta_disponible;
+                  $scope.horas[i+2].disponible = esta_disponible;
               }
           }
       }
+  }
+
+  $scope.filtrarHoras = function(value) {
+      return true;
   }
 
   $scope.getObjetoHora = function(hora) {
@@ -164,14 +170,19 @@ angular.module('starter.controllers', [])
         alert('No es posible solicitar una cita para una fecha anterior a la actual');
         return; 
       }
+      
       delete $scope.cita.fields.NombreCliente;
       delete $scope.cita.fields.DetalleVehiculo;
       delete $scope.cita.fields.Tipo;
+      delete $scope.cita.fields.placa;
       $scope.citaEditar.Fecha.setHours(horas,minutos,0,0);
-      $scope.cita.fields.TipoServicio[0] = $scope.citaEditar.TipoServicio[0];
+      if ($scope.serviceSelected) {
+        $scope.cita.fields.TipoServicio[0] = $scope.serviceSelected.id;
+      } else {
+        $scope.cita.fields.TipoServicio[0] = $scope.citaEditar.TipoServicio[0];
+      }
       $scope.cita.fields.Comentarios = $scope.citaEditar.Comentarios;
       $scope.cita.fields.Fecha = $scope.citaEditar.Fecha;
-      console.log($scope.cita);
       $scope.cita.save().then(function(value){
         if (value) {
           alert('Cita guardada!');  
@@ -182,7 +193,7 @@ angular.module('starter.controllers', [])
     } else {
       if ( $scope.citaNueva.Fecha < fechaHoy ) {
         alert('No es posible crear una cita para una fecha anterior a la actual');
-        return; 
+        return;
       }
       $scope.citaNueva.Fecha.setHours(horas,minutos,0,0);
       $scope.citaNueva.TipoServicio = $scope.serviceSelected;
@@ -224,7 +235,8 @@ angular.module('starter.controllers', [])
   }
 
   $scope.cargarCitas = function() {
-    CitasService.getAll($scope.cliente.fields.Cliente).then(function(value){
+    CitasService.getTodayByCliente($scope.cliente.fields.Cliente)
+    .then(function(value){
       if ( value.length == 0 ) {
         alert('Aún no se han agendado citas!\n\nIngrese su cita a continuación...');
         $state.go('tab.cita-crear');

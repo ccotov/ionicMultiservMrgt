@@ -30,7 +30,7 @@
       <div ng-if = "editandoCita">
         <label class="item item-input item-select">
           <div class="input-label">Tipo de Servicio</div>
-          <select ng-options="servicio.fields.Nombre for servicio in servicios" ng-model="editCitaServicio" name="Servicio" required ng-change="servicioSelected(serviceSelected)">{{editCitaServicio}}</select>
+          <select ng-options="servicio.fields.Nombre for servicio in servicios" ng-model="editCitaServicio" name="Servicio" required ng-change="servicioSelected(editCitaServicio)">{{editCitaServicio}}</select>
         </label>
       </div>
 
@@ -62,19 +62,22 @@
       <div ng-if = "!editandoCita">
         <label class="item item-input item-select">
           <div class="input-label">Hora</div>
-          <select ng-model="horaNueva" ng-options="hora.hora for hora in horas" name="horaCita" ng-change="horaSelected(horaNueva)">
+          <select ng-model="horaNueva" ng-options="hora.hora for hora in horas | filter:filtrarHoras(hora)" required name="horaCita" ng-change="horaSelected(horaNueva)">
           </select>
         </label>
       </div>
       <div ng-if = "editandoCita">
         <label class="item item-input item-select">
           <div class="input-label">Hora</div>
-          <select ng-model="horaNueva" ng-options="hora.hora for hora in horas" required ng-change="horaSelected(horaNueva)">
+          <select ng-model="horaNueva" ng-options="hora.hora for hora in horas | filter:filtrarHoras(hora)" required name="horaCita" ng-change="horaSelected(horaNueva)">
           </select>
         </label>
       </div>
-      <span STYLE="color: red; font-size: 10pt" ng-show="horaNueva===0">* Seleccione una hora *</span>
+      <span STYLE="color: red; font-size: 10pt" ng-show="!horaNueva">* Seleccione una fecha y luego una hora *</span>
       <button class="button button-block button-positive" ng-disabled="citaForm.$invalid" type="submit">Guardar</button>
     </form>
   </ion-content>
+  <ion-footer-bar class="bar-stable">
+    <h1 class="title">Multiservicios La Margoth - Tel: 2556-8315</h1>
+  </ion-footer-bar>
 </ion-view>
